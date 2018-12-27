@@ -6,10 +6,10 @@ from bs4 import BeautifulSoup
 import re
 from flask import Flask, request, jsonify
 
-client_id = "csTAA8J0cnO-r_-XSHs79SbFQIP4vE1J45Fksl8U4tNXgOfle_QtAi3X7JDqZzj1"
-client_secret = "CpOGrokHETqV6mKAWHm45539l0HDbS8MY3X6sYyVXPpYuvKnlEA3Gbpwd4nOO-WS_lwd_yWYdl_Cyg-jgh5NyQ"
+client_id = ""
+client_secret = ""
 
-client_access_token = "qXjJJL7_9lH2S-pSFDNJ04jvMJ19eUsaiUMLaHe2b13hNqZ8_B5IruXeHhRjo_B9"
+client_access_token = ""
 
 app = Flask(__name__)
 
