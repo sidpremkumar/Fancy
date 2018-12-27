@@ -1,4 +1,5 @@
 ## Fancy
+![alt text](/fancy_header.jpg)
 ### Learn more [here](https://sidpremkumar.com/Fancy)
 
 Fancÿ was a program born out of observing a pattern. I noticed that songs that required a lot of thought (either hidden meanings or references that were a bit obscure) often had a plethora of annotations on [Genius.com](https://genius.com). Conversely, I found that songs that I thought were simple and easy to understand tended to have little to no annotations. 
