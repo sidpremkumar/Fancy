@@ -5,13 +5,17 @@ import json
 from bs4 import BeautifulSoup
 import re
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 
+# Genius API Information 
 client_id = ""
 client_secret = ""
-
 client_access_token = ""
 
+# Flask Information 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Format a request URI for the Genius API
 _URL_API = "https://api.genius.com/"
@@ -20,7 +24,6 @@ _URL_SEARCH = "search?q="
 
 def search_helper(term):
     querystring = _URL_API + _URL_SEARCH + urllib.request.quote(term)
-    #print(querystring)
     request = urllib.request.Request(querystring)
     request.add_header("Authorization", "Bearer " + client_access_token)
     request.add_header("User-Agent", "")
@@ -31,9 +34,10 @@ def search_helper(term):
 
 def search_for_song(song_name):
     ret = search_helper(song_name)
-    string = "Getting information on {}".format(ret['response']['hits'][0]['result']['full_title'])
+    string = ret['response']['hits'][0]['result']['full_title']
+    artwork = ret['response']['hits'][0]['result']['song_art_image_thumbnail_url']
     url = ret['response']['hits'][0]['result']['url']
-    return url, string
+    return url, string, artwork
 
 def get_song_info(url):
     page = requests.get(url)
@@ -46,26 +50,30 @@ def parse_lyrics(lyrics_html, url):
     values = []
 
     annotated = lyrics_html.find_all('a')
-    for a in annotated:
-        temp = a['href']
-        temp = temp[temp.find('note-')+5:]
-        querystring = _URL_API + 'annotations/' + temp
-        request = urllib.request.Request(querystring)
-        request.add_header("Authorization", "Bearer " + client_access_token)
-        request.add_header("User-Agent", "")
-        response = urllib.request.urlopen(request, timeout=3).read().decode('UTF-8')
-        json_obj = json.loads(response)
-        annotation = json_obj['response']['annotation']['body']['dom']['children']
-        if len(annotation) >= 5:
-            values.append(1)
-        else:
-            values.append(len(annotation)/5)
+    # TODO: Develop a way to evaluate the quality of annotations
+    # for a in annotated:
+    #     # temp = a['href']
+    #     # temp = temp[temp.find('note-')+5:]
+    #     # querystring = _URL_API + 'annotations/' + temp
+    #     # request = urllib.request.Request(querystring)
+    #     # request.add_header("Authorization", "Bearer " + client_access_token)
+    #     # request.add_header("User-Agent", "")
+    #     # response = urllib.request.urlopen(request, timeout=3).read().decode('UTF-8')
+    #     # json_obj = json.loads(response)
+    #     # try:
+    #     #     annotation = json_obj['response']['annotation']['body']['dom']['children']
+    #     #     if len(annotation) >= 5:
+    #     #         values.append(1)
+    #     #     else:
+    #     #         values.append(len(annotation)/5)
+    #     # except:
+    #     values.append(1)
 
     #Get all the lyrics that are annotated and add them to the dict
     for x in range(len(annotated)):
         temp = annotated[x].get_text().rstrip("\n\r")
         temp = re.sub('\s+',' ',temp)
-        dict.update({temp:values[x]})
+        dict.update({temp:1})
     full_text = lyrics_html.get_text()
     temp = ""
     #now we have to add all the lyrics that are not annotated
@@ -112,16 +120,14 @@ def evaluate(result_dict):
     return temp
 
 def driver(song_name):
-    query,string = search_for_song(song_name)
+    query,string,artwork = search_for_song(song_name)
     lyrics = get_song_info(query)
     result_dict = parse_lyrics(lyrics, query)
     score = evaluate(result_dict)
-    return score, string
+    return score, string, artwork
 
 @app.route('/query', methods= ['POST'])
 def create():
     query = request.args['query']
-    score, string = driver(query)
-    return jsonify({"score":score, "string":string})
-
-    #print(lyrics)
+    score, string, artwork = driver(query)
+    return jsonify({"score":score, "string":string, "artwork":artwork})
