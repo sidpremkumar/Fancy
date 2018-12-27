@@ -24,6 +24,7 @@ _URL_SEARCH = "search?q="
 
 def search_helper(term):
     querystring = _URL_API + _URL_SEARCH + urllib.request.quote(term)
+    #print(querystring)
     request = urllib.request.Request(querystring)
     request.add_header("Authorization", "Bearer " + client_access_token)
     request.add_header("User-Agent", "")
@@ -36,8 +37,9 @@ def search_for_song(song_name):
     ret = search_helper(song_name)
     string = ret['response']['hits'][0]['result']['full_title']
     artwork = ret['response']['hits'][0]['result']['song_art_image_thumbnail_url']
+    genius_url = ret['response']['hits'][0]['result']['url']
     url = ret['response']['hits'][0]['result']['url']
-    return url, string, artwork
+    return url, string, artwork, genius_url
 
 def get_song_info(url):
     page = requests.get(url)
@@ -120,14 +122,14 @@ def evaluate(result_dict):
     return temp
 
 def driver(song_name):
-    query,string,artwork = search_for_song(song_name)
+    query,string,artwork, genius_url = search_for_song(song_name)
     lyrics = get_song_info(query)
     result_dict = parse_lyrics(lyrics, query)
     score = evaluate(result_dict)
-    return score, string, artwork
+    return score, string, artwork, genius_url
 
 @app.route('/query', methods= ['POST'])
 def create():
     query = request.args['query']
-    score, string, artwork = driver(query)
-    return jsonify({"score":score, "string":string, "artwork":artwork})
+    score, string, artwork, genius_url = driver(query)
+    return jsonify({"score":score, "string":string, "artwork":artwork, "genius_url":genius_url})
