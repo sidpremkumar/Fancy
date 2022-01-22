@@ -1,4 +1,4 @@
-### Note: Genious has changed their Website so this currently does not work anymore 😔
+### Note: Genius has changed their Website so this currently does not work anymore 😔
 
 ## Fancy
 ![alt text](/fancy_header.jpg)
